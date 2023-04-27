@@ -20,6 +20,9 @@ class styleProgramatically: UIViewController {
     private var isNegative: Bool = false
     private let calc = caluclatorLogic() // 計算ロジック
     private var labelText: String = ""
+    private var baseNumber: String = ""
+    private var baseOperand: String = ""
+    private var numTuple: (num: String, operand: String, laterComer: String) = ("", "", "")
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -255,57 +258,67 @@ class styleProgramatically: UIViewController {
     }
     
     @IBAction func buttonRecognizer(_ sender: UIButton? = nil) {
-        
         let button = sender!
         tappedBtnArr.append(button)
         button.layer.opacity = 0.85
         let number_ = button.currentTitle?.description ?? "0"
         
-        if let n = Double(number_) { // doubleに変換できる→つまり数字
-            numberText += String(number_)
+        switch button.currentTitle {
+        case K.operands().add, K.operands().minus, K.operands().devision, K.operands().multiply: // オペランド
+            isOperandTapped = true
+            baseOperand = number_ // オペランドセット
+            
+        case K.operands().negative: // 正・負の数
+            numberText = calc.getNegativeNumber(number: numberText)
+            initButtonColorDispatch(button: button)
+            
+        case K.operands().percent: // パーセント
+            numberText = calc.percentage(numberText)
+            initButtonColorDispatch(button: button)
+            
+        case K.operands().AC: // All Clear
+            laterComer = ""
+            numberText = "0"
+            label.text = numberText
+            initButtons()
+            initButtonColorDispatch(button: button)
+            numTuple = ("", "", "")
+            
+        case K.Number().dot: // 小数点
+            numberText += "."
+            numberText = textValidation(text: numberText)
+            
+        case K.operands().equal: // イコールボタン. ここで初めて計算ロジックを走らせる
+            initButtons()
+            numTuple.num = numberText
+            numTuple.operand = baseOperand
+            numTuple.laterComer = laterComer
+            calc.calculator(calcSet: numTuple)
+            
+        default: // 数字
+            initButtonColorDispatch(button: button)
             
             if isOperandTapped {
-                calc.calculator(calcNumber: Double(numberText))
+                laterComer += String(number_)
+                laterComer = textValidation(text: laterComer)
+            } else {
+                numberText += String(number_)
+                numberText = textValidation(text: numberText)
             }
             
-        } else {
-            // オペランド等
-            switch button.currentTitle {
-            case K.operands().add, K.operands().minus, K.operands().devision, K.operands().multiply:
-                isOperandTapped = true
-                calc.calculator(operand: number_)
-                
-            case K.operands().negative: // 正・負の数
-                numberText = calc.getNegativeNumber(number: numberText)
-                initButtonColorDispatch(button: button)
-                
-            case K.operands().percent: // パーセント
-                numberText = calc.percentage(numberText)
-                initButtonColorDispatch(button: button)
-                
-            case K.operands().AC: // All Clear
-                laterComer = ""
-                numberText = "0"
-                label.text = numberText
-                initButtons()
-                initButtonColorDispatch(button: button)
-                calc.clear()
-                
-            case K.Number().dot: // 小数点
-                numberText += "."
-                numberText = textValidation(text: numberText)
-                
-            default:
-                print("default")
-            }
         }
+        
+        print("先に入力したやつ \(numberText)")
+        print("オペランド   \(baseOperand)")
+        print("後に入力したやつ \(laterComer)")
+        
         // = でボタンの透明度を戻す,　計算結果の反映
         if button.currentTitle == K.operands().equal {
             initButtonColorDispatch(button: button)
             isOperandTapped = false
         }
         
-        label.text = numberText
+        label.text = isOperandTapped && laterComer != "" ? laterComer : numberText
         
     }
     
@@ -329,10 +342,10 @@ class styleProgramatically: UIViewController {
         }
         
         // ドットの位置, 数
-//        if text_.first!.description == K.Number().dot {
-//            text_ = "0"
-//        }
-//
+        //        if text_.first!.description == K.Number().dot {
+        //            text_ = "0"
+        //        }
+        //
         if let firstDotIndex = text_.firstIndex(of: ".") {
             let startIndex = text_.index(after: firstDotIndex) // 最初のドット以降
             let range = startIndex..<text_.endIndex
