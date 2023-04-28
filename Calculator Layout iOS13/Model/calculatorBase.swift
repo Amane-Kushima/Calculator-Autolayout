@@ -8,6 +8,8 @@
 
 class caluclatorLogic {
     
+    private var currentResult: String = ""
+    
     func calculator(calcSet : (num: String, operand: String, laterComer: String)) -> String{
         
         let baseNumber = Double(calcSet.num)!
@@ -15,18 +17,18 @@ class caluclatorLogic {
         
         switch calcSet.operand {
         case K.operands().add:
-            add(formarNumber: baseNumber, latter: laterComeNumber)
+            currentResult = add(formarNumber: baseNumber, latter: laterComeNumber)
             
         case K.operands().minus:
-            subtract(formarNumber: baseNumber, latter: laterComeNumber)
+            currentResult = subtract(formarNumber: baseNumber, latter: laterComeNumber)
             
         case K.operands().multiply:
-            multiply(formarNumber: baseNumber, latter: laterComeNumber)
+            currentResult = multiply(formarNumber: baseNumber, latter: laterComeNumber)
             
         case K.operands().devision:
             
             do {
-                try divide(formarNumber: baseNumber, latter: laterComeNumber)
+                try currentResult = divide(formarNumber: baseNumber, latter: laterComeNumber)
             } catch CalculationError.divideByZero {
                 print("Error: Divide by zero")
             } catch {
@@ -36,30 +38,32 @@ class caluclatorLogic {
         default:
             print("default")
         }
+        
+        return currentResult
     }
     
     // Methods
-    func add(formarNumber: Double, latter: Double) {
+    func add(formarNumber: Double, latter: Double) -> String {
         let resultNumber = formarNumber + latter
-        print("結果　\(resultNumber)")
+        return String(resultNumber)
     }
     
-    func subtract(formarNumber: Double, latter: Double) {
+    func subtract(formarNumber: Double, latter: Double) -> String {
         let resultNumber = formarNumber - latter
-        print("結果　\(resultNumber)")
+        return String(resultNumber)
     }
     
-    func multiply(formarNumber: Double, latter: Double) {
+    func multiply(formarNumber: Double, latter: Double) -> String {
         let resultNumber = formarNumber * latter
-        print("結果　\(resultNumber)")
+        return String(resultNumber)
     }
     
-    func divide(formarNumber: Double, latter: Double) throws {
+    func divide(formarNumber: Double, latter: Double) throws -> String {
         guard latter != 0 else {
             throw CalculationError.divideByZero
         }
         let resultNumber = formarNumber / latter
-        print("結果　\(resultNumber)")
+        return String(resultNumber)
     }
     
     func percentage(_ number: String) -> String {

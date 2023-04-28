@@ -15,6 +15,7 @@ class styleProgramatically: UIViewController {
     private var laterComer: String = ""
     private var isNumberTapped: Bool = false
     private var isOperandTapped: Bool = false
+    private var isEqualTapped: Bool = false
     private var calcResult: String = ""
     private var tappedBtnArr: Array<UIButton> = []
     private var isNegative: Bool = false
@@ -41,16 +42,29 @@ class styleProgramatically: UIViewController {
         ])
         // 一段目 =========================================
         let padding: CGFloat = 20
+        let topStackView = stackViewGenarator(stackDirection: .vertical) // ラベルとアイテムバーを格納するためのstackView
+        topStackView.translatesAutoresizingMaskIntoConstraints = false
+        parentStackView.addArrangedSubview(topStackView) // parentStackViewにviewの追加
+        
         let baseView = UIView()
+        let itemBar = UIView()
         baseView.translatesAutoresizingMaskIntoConstraints = false
+        
         label.text = numberText
         label.textColor = UIColor.white
         label.backgroundColor = UIColor.black
         label.textAlignment = NSTextAlignment.right
         label.font = label.font.withSize(50)
         label.translatesAutoresizingMaskIntoConstraints = false
+        
+        itemBar.frame.size.height = 20
+        itemBar.backgroundColor = UIColor.red
+        itemBar.translatesAutoresizingMaskIntoConstraints = false
+        
         baseView.addSubview(label) // viewにlabelの追加
-        parentStackView.addArrangedSubview(baseView) // parentStackViewにviewの追加
+        topStackView.addSubview(itemBar) // viewにitemBarの追加
+        topStackView.addSubview(baseView)
+        
         NSLayoutConstraint.activate([
             label.leadingAnchor.constraint(equalTo: baseView.leadingAnchor, constant: padding),
             label.trailingAnchor.constraint(equalTo: baseView.trailingAnchor, constant: -padding),
@@ -277,6 +291,7 @@ class styleProgramatically: UIViewController {
             initButtonColorDispatch(button: button)
             
         case K.operands().AC: // All Clear
+            isEqualTapped = false
             laterComer = ""
             numberText = "0"
             label.text = numberText
@@ -289,13 +304,15 @@ class styleProgramatically: UIViewController {
             numberText = textValidation(text: numberText)
             
         case K.operands().equal: // イコールボタン. ここで初めて計算ロジックを走らせる
+            isEqualTapped = true
             initButtons()
             numTuple.num = numberText
             numTuple.operand = baseOperand
             numTuple.laterComer = laterComer
-            calc.calculator(calcSet: numTuple)
+            label.text = calc.calculator(calcSet: numTuple)
             
         default: // 数字
+            isEqualTapped = false
             initButtonColorDispatch(button: button)
             
             if isOperandTapped {
@@ -318,7 +335,9 @@ class styleProgramatically: UIViewController {
             isOperandTapped = false
         }
         
-        label.text = isOperandTapped && laterComer != "" ? laterComer : numberText
+        if !isEqualTapped {
+            label.text = isOperandTapped && laterComer != "" ? laterComer : numberText
+        }
         
     }
     
